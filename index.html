@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Calculator</title>
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 50px auto;
+            width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .error-icon {
+            display: none;
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .error-icon:hover+.error-tooltip {
+            display: block;
+        }
+
+        .error-tooltip {
+            display: none;
+            position: absolute;
+            background-color: rgba(31, 28, 28, 0.8);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            z-index: 1;
+            bottom: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .error-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            border: solid transparent;
+            border-width: 5px;
+            border-top-color: rgba(15, 12, 12, 0.8);
+            transform: translateX(-50%);
+        }
+
+        input[type="text"].error {
+            border-color: rgb(209, 36, 36);
+        }
+
+        label:hover {
+            color: blue;
+            cursor: pointer;
+        }
+    </style>
+ 
+    </head>
+    
+    <body>
+    
+        <div class="card">
+            <form id="taxForm" onsubmit="return onSubmit()">
+                <div class="container">
+                    <div class="form-group">
+                        <label for="grossIncome">Gross Annual Income(Lakh):</label>
+                        <input type="text" id="grossIncome" class="form-control" oninput="validateNumber(this)">
+                        <div class="error-icon" id="grossIncomeError">!</div>
+                        <div class="error-tooltip" id="grossIncomeTooltip">Please enter a valid number</div>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="extraIncome">Extra Income:(Lakh)</label>
+                        <input type="text" id="extraIncome" class="form-control" oninput="validateNumber(this)">
+                        <div class="error-icon" id="extraIncomeError">!</div>
+                        <div class="error-tooltip" id="extraIncomeTooltip">Please enter a valid number</div>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="deductions">Deductions:(Lakh)</label>
+                        <input type="text" id="deductions" class="form-control" oninput="validateNumber(this)">
+                        <div class="error-icon" id="deductionsError">!</div>
+                        <div class="error-tooltip" id="deductionsTooltip">Please enter a valid number</div>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="age">Age:</label>
+                        <select id="age" class="form-control">
+                            <option value="<40">&lt;40</option>
+                            <option value="≥40 &amp; <60">&ge;40 &lt;60</option>
+                            <option value="≥60">&ge;60</option>
+                        </select>
+                        <div class="error-icon" id="ageError">!</div>
+                        <div class="error-tooltip" id="ageTooltip">Please select an age range</div>
+                    </div>
+    
+                    <div class="form-group">
+                        <button type="submit">Submit</button>
+                    </div>
+                </div>
+            </form>
+    
+            <dialog id="resultDialog">
+                <div class="modal-content">
+                    <p id="resultMessage"></p>
+                    <p id="overallIncomeMessage"></p>
+                    <button onclick="closeDialog()">Close</button>
+                </div>
+            </dialog>
+        </div>
+    
+        <script>
+            function validateNumber(input) {
+                var value = input.value;
+                if (isNaN(value) || value.trim() === '') {
+                    input.classList.add('error');
+                    input.nextElementSibling.style.display = 'inline-block';
+                } else {
+                    input.classList.remove('error');
+                    input.nextElementSibling.style.display = 'none';
+                }
+            }
+    
+            function onSubmit() {
+                var grossIncome = parseFloat(document.getElementById('grossIncome').value);
+                var extraIncome = parseFloat(document.getElementById('extraIncome').value);
+                var deductions = parseFloat(document.getElementById('deductions').value);
+                var age = document.getElementById('age').value;
+                var tax = 0;
+    
+                // Calculate taxable income
+                var taxableIncome = (grossIncome + extraIncome - deductions) - 8; // Deduct 8 Lakhs
+                var overallIncome = grossIncome + extraIncome - tax;
+                if (taxableIncome > 0) {
+                    if (age === '<40') {
+                        tax = taxableIncome * 0.3; // 30% tax for age < 40
+                    } else if (age === '≥40 & <60') {
+                        tax = taxableIncome * 0.4; // 40% tax for age ≥ 40 but < 60
+                    } else if (age === '≥60') {
+                        tax = taxableIncome * 0.1; // 10% tax for age ≥ 60
+                    }
+                    overallIncome = grossIncome + extraIncome - tax;
+                }
+    
+                // Display result in dialog
+                var dialog = document.getElementById('resultDialog');
+                var resultMessage = document.getElementById('resultMessage');
+                var overallIncomeMessage = document.getElementById('overallIncomeMessage');
+                resultMessage.textContent = 'Tax to pay: ' + tax.toFixed(2) + ' Lakhs';
+                overallIncomeMessage.textContent = 'Overall Income after tax deduction: ' + overallIncome.toFixed(2) + ' Lakhs';
+                dialog.showModal();
+    
+                return false; // Prevent default form submission
+            }
+    
+            function closeDialog() {
+                var dialog = document.getElementById('resultDialog');
+                dialog.close();
+            }
+        </script>
+    
+    </body>
+    
+    </html>
+    
